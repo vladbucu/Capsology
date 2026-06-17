@@ -91,7 +91,7 @@ export default function CapsulePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          answers: capsule?.quiz_answers || {},
+          answers: ((capsule as any)?.quiz_answers) || {},
           session_id: crypto.randomUUID(),
           exclude_ids: cats.flatMap(c => c.items.map((i: any) => i.id)),
         }),
@@ -114,7 +114,7 @@ export default function CapsulePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          answers: { ...(capsule?.quiz_answers || {}), category_override: catId },
+          answers: { ...(((capsule as any)?.quiz_answers) || {}), category_override: catId },
           session_id: crypto.randomUUID(),
           exclude_ids: currentIds,
           single_category: catId,
