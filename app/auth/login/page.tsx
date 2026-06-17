@@ -1,11 +1,12 @@
 'use client'
+import { Suspense } from 'react'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { LangToggle, useLang } from '@/lib/lang'
 
-export default function AuthPage() {
+function AuthPageInner() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const redirectTo   = searchParams.get('redirect') || '/profile'
@@ -104,3 +105,5 @@ export default function AuthPage() {
     </div>
   )
 }
+
+export default function AuthPage() { return <Suspense fallback={null}><AuthPageInner /></Suspense> }

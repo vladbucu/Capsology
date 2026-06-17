@@ -1,4 +1,5 @@
 'use client'
+import { Suspense } from 'react'
 import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
@@ -27,7 +28,7 @@ interface GuestInfo {
   postal_code: string
 }
 
-export default function CheckoutPage() {
+function CheckoutPageInner() {
   const searchParams = useSearchParams()
   const router       = useRouter()
 
@@ -370,3 +371,5 @@ export default function CheckoutPage() {
     </div>
   )
 }
+
+export default function CheckoutPage() { return <Suspense fallback={null}><CheckoutPageInner /></Suspense> }

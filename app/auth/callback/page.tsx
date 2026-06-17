@@ -1,9 +1,10 @@
 'use client'
+import { Suspense } from 'react'
 import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-export default function AuthCallback() {
+function AuthCallbackInner() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const redirectTo   = searchParams.get('redirect') || '/profile'
@@ -39,3 +40,5 @@ export default function AuthCallback() {
     </div>
   )
 }
+
+export default function AuthCallback() { return <Suspense fallback={null}><AuthCallbackInner /></Suspense> }
