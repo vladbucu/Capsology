@@ -10,8 +10,11 @@ export async function POST(req: NextRequest) {
 
     console.log('Answers received:', JSON.stringify(answers))
 
-    const { createServerComponentClient } = await import('@/lib/supabase')
-    const supabase = await createServerComponentClient()
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
 
     const { data: products, error } = await supabase
       .from('products')
