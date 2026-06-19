@@ -13,19 +13,8 @@ export function filterProductsByAnswers(
   return products.filter(p => {
     // 1. Gender filter
     if (p.gender !== answers.gender && p.gender !== 'unisex') return false
-
-    // 2. Price ceiling — no single item > 40% of budget
-    if (p.price_eur > answers.budget * 0.4) return false
-
-    // 3. Avoid filter — exclude products matching any "avoid" tag
-    if (answers.avoid.length > 0) {
-      const productText = [...(p.style_tags || []), ...(p.colours || []), p.name, p.category].join(' ').toLowerCase()
-      const hasAvoidTag = answers.avoid.some(avoid =>
-        productText.includes(avoid.toLowerCase())
-      )
-      if (hasAvoidTag) return false
-    }
-
+    // 2. Budget cap — no single item > 60% of total budget
+    if (p.price_eur > answers.budget * 0.6) return false
     return true
   })
 }
