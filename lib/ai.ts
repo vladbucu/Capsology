@@ -145,7 +145,7 @@ export async function generateCapsule(
   const selectedProducts = filtered.filter(p => selectedIds.includes(p.id))
   const hasShoes   = selectedProducts.some(p => p.category === 'shoes')
   const hasTops    = selectedProducts.some(p => p.category === 'tops')
-  const hasBottoms = selectedProducts.some(p => p.category === 'bottoms' || p.category === 'dresses')
+  const hasBottoms = selectedProducts.some(p => (p.category as string) === 'bottoms' || (p.category as string) === 'dresses')
 
   if (!hasShoes || !hasTops || !hasBottoms || selectedIds.length === 0) {
     const guaranteed = pickGuaranteedCapsule(filtered, answers)
