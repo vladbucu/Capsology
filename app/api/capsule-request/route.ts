@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
             unlock_price_ron: 49,
             is_published:     false,
             status:           'draft',
+            items:            [], // coloana veche NOT NULL; modelul curatat foloseste capsule_items
           })
           .select('id')
           .single()

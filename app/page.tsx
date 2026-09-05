@@ -62,29 +62,27 @@ export default function HomePage() {
             </div>
 
             <div className="relative hidden lg:flex items-center justify-center">
-              <div className="aspect-square w-full max-w-[420px] rounded-card-lg bg-dark-grey
-                              flex items-center justify-center relative overflow-hidden">
+              <div className="aspect-[4/5] w-full max-w-[420px] rounded-card-lg bg-dark-grey
+                              relative overflow-hidden">
 
-                {/* Marca segmentata — simbolul central al brandului */}
-                <img src="/brand/logo/mark-white.svg" alt=""
-                  className="w-[46%] h-[46%] opacity-95" />
+                {/* Fallback vizual daca poza nu incarca */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img src="/brand/logo/mark-white.svg" alt="" className="w-[40%] h-[40%] opacity-15" />
+                </div>
 
-                {/* Inele concentrice discrete */}
-                <span className="absolute w-[62%] h-[62%] rounded-full border border-white/[0.07]" />
-                <span className="absolute w-[82%] h-[82%] rounded-full border border-white/[0.04]" />
+                {/* Tinuta editoriala — o capsula completa.
+                    Inlocuieste src cu asset propriu: /brand/looks/hero-look.jpg */}
+                <img
+                  src="https://images.unsplash.com/photo-1763610452422-a24873594a0b?w=900&q=80&auto=format&fit=crop"
+                  alt="Ținută smart casual dintr-o capsulă Capsology"
+                  className="relative w-full h-full object-cover object-top"
+                  loading="lazy" />
 
-                {/* Cele 4 categorii, asezate pe cadran */}
-                {[
-                  { label: 'Cămăși',   pos: 'top-7 left-7' },
-                  { label: 'Pantaloni',pos: 'top-7 right-7' },
-                  { label: 'Pantofi',  pos: 'bottom-7 left-7' },
-                  { label: 'Accesorii',pos: 'bottom-7 right-7' },
-                ].map(q => (
-                  <span key={q.label}
-                    className={`absolute ${q.pos} text-[10px] tracking-[0.14em] uppercase text-white/30`}>
-                    {q.label}
-                  </span>
-                ))}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent px-5 pt-10 pb-4">
+                  <p className="text-xs text-white/85 leading-relaxed">
+                    O capsulă = o garderobă completă, cu piese care se asortează între ele.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

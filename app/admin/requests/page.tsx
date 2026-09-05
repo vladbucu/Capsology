@@ -192,9 +192,15 @@ export default function RequestsPage() {
                 {open.consent_marketing ? 'Da, acceptă' : 'Nu'}
               </Row>
 
-              <a href={`mailto:${open.email}?subject=Capsula ta Capsology&body=Salut ${open.first_name},%0D%0A%0D%0AAm pregătit capsula ta.`}
+              <button
+                onClick={() => router.push(open.capsule_id ? `/admin/capsule/${open.capsule_id}` : '/admin/capsule/nou')}
                 className="block w-full bg-ink text-white rounded-btn py-3.5 text-sm font-semibold text-center hover:bg-dark-grey transition">
-                Trimite capsula pe email
+                {open.capsule_id ? 'Editează capsula →' : 'Creează capsulă →'}
+              </button>
+
+              <a href={`mailto:${open.email}?subject=Capsula ta Capsology&body=Salut ${open.first_name},%0D%0A%0D%0AAm pregătit capsula ta.`}
+                className="block w-full text-center text-xs text-ink/45 hover:text-ink transition">
+                sau trimite un email direct
               </a>
             </div>
           </aside>

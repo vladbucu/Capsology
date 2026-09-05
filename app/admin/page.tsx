@@ -100,6 +100,13 @@ export default function AdminDashboard() {
     }
   }
 
+  const deleteCapsule = async (id: string, title: string) => {
+    if (!confirm(`Ștergi capsula „${title || 'fără titlu'}"? Articolele ei se șterg definitiv, iar cererea asociată revine în lista de cereri.`)) return
+    if (await call('/api/admin/capsule/delete', { capsule_id: id })) {
+      setMsg('Capsulă ștearsă.'); loadAll()
+    }
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-warm-white"><Header />
       <div className="py-32 text-center text-ink/40 text-sm animate-pulse">Se încarcă…</div>
@@ -267,10 +274,16 @@ export default function AdminDashboard() {
                     </span>
                   </Td>
                   <Td>
-                    <Link href={`/admin/capsule/${c.id}`}
-                      className="text-xs border border-border-line rounded-md px-2.5 py-1 hover:bg-white transition">
-                      Editează
-                    </Link>
+                    <div className="flex gap-1.5">
+                      <Link href={`/admin/capsule/${c.id}`}
+                        className="text-xs border border-border-line rounded-md px-2.5 py-1 hover:bg-white transition">
+                        Editează
+                      </Link>
+                      <button onClick={() => deleteCapsule(c.id, c.title)}
+                        className="text-xs border border-[#FECACA] text-[#DC2626] rounded-md px-2.5 py-1 hover:bg-[#FEF2F2] transition">
+                        Șterge
+                      </button>
+                    </div>
                   </Td>
                 </tr>
               ))}

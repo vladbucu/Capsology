@@ -51,7 +51,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (!cid) {
-      const { data, error } = await admin.from('capsules').insert(payload).select('id').single()
+      // `items` (jsonb) e din modelul vechi, NOT NULL fara default. Modelul
+      // curatat foloseste tabela `capsule_items`, deci la insert punem [].
+      const { data, error } = await admin.from('capsules')
+        .insert({ ...payload, items: [] }).select('id').single()
       if (error) throw error
       cid = data.id
     } else {
