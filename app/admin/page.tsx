@@ -11,7 +11,7 @@ export default function AdminDashboard() {
 
   const [authed, setAuthed]   = useState(false)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab]         = useState<'incasari' | 'utilizatori' | 'capsule'>('incasari')
+  const [tab, setTab]         = useState<'incasari' | 'utilizatori' | 'capsule'>('capsule')
 
   const [payments, setPayments] = useState<any[]>([])
   const [users, setUsers]       = useState<any[]>([])
@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     const [pay, usr, cap] = await Promise.all([
       supabase.from('payments').select('*').eq('status', 'paid').order('paid_at', { ascending: false }),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-      supabase.from('capsules').select('id, title, user_id, is_published, published_at, total_price_eur, capsule_number, status')
+      supabase.from('capsules').select('id, title, user_id, is_published, published_at, total_price_eur, capsule_number, status, request_id, access_email_sent_at')
         .order('created_at', { ascending: false }),
     ])
     setPayments(pay.data || [])
@@ -247,7 +247,14 @@ export default function AdminDashboard() {
               {capsules.map(c => (
                 <tr key={c.id} className="hover:bg-warm-white">
                   <Td mono>{c.capsule_number ? String(c.capsule_number).padStart(3, '0') : '—'}</Td>
-                  <Td><span className="font-medium">{c.title || 'Fără titlu'}</span></Td>
+                  <Td>
+                    <span className="font-medium">{c.title || 'Fără titlu'}</span>
+                    {c.request_id && (
+                      <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-[#FAEEDA] text-[#854F0B] align-middle">
+                        din cerere
+                      </span>
+                    )}
+                  </Td>
                   <Td>{users.find(u => u.id === c.user_id)?.email || '—'}</Td>
                   <Td>{Number(c.total_price_eur || 0).toFixed(0)} RON</Td>
                   <Td>

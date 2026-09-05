@@ -113,7 +113,15 @@ export default function CapsuleBuilder() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setMsg(publish ? 'Capsulă publicată — utilizatorul o vede acum.' : 'Salvat.')
+      const warnText: Record<string, string> = {
+        email_failed:      ' (dar emailul cu linkul de acces NU a plecat — verifică Brevo)',
+        email_link_failed: ' (dar nu am putut genera linkul de acces)',
+        email_no_address:  ' (dar clientul nu are email — linkul de acces nu a plecat)',
+      }
+      setMsg(
+        (publish ? 'Capsulă publicată — utilizatorul o vede acum.' : 'Salvat.') +
+        (data.warning ? (warnText[data.warning] || ` (avertisment: ${data.warning})`) : '')
+      )
       if (isNew) router.replace(`/admin/capsule/${data.capsule_id}`)
       else {
         const { data: it } = await supabase.from('capsule_items')
@@ -138,9 +146,9 @@ export default function CapsuleBuilder() {
 
       <div className="max-w-content mx-auto px-6 lg:px-12 py-8">
 
-        <button onClick={() => router.push('/admin/requests')}
+        <button onClick={() => router.push('/admin')}
           className="text-sm text-ink/50 hover:text-ink transition mb-6">
-          ← Înapoi la cereri
+          ← Înapoi la panou
         </button>
 
         <div className="grid lg:grid-cols-[320px_1fr] gap-8">

@@ -22,9 +22,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Bugetul minim este 250 RON.' }, { status: 400 })
     }
 
+    const cleanEmail = email.trim().toLowerCase()
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
     // ── Anti-duplicat: aceeasi adresa in ultimele 24h ─────
@@ -32,7 +35,7 @@ export async function POST(req: NextRequest) {
     const { data: recent } = await supabase
       .from('capsule_requests')
       .select('id')
-      .eq('email', email.trim().toLowerCase())
+      .eq('email', cleanEmail)
       .gte('created_at', dayAgo)
       .limit(1)
 
@@ -47,7 +50,7 @@ export async function POST(req: NextRequest) {
       .insert({
         first_name: first_name.trim(),
         last_name:  last_name.trim(),
-        email:      email.trim().toLowerCase(),
+        email:      cleanEmail,
         phone:      phone?.trim() || null,
         budget_ron: budget,
         colors:     colors    || [],
@@ -64,6 +67,56 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error('capsule_requests insert:', error)
       return NextResponse.json({ error: 'Nu am putut salva cererea. Încearcă din nou.' }, { status: 500 })
+    }
+
+    // ── Cont client + capsula-ciorna (best-effort) ────────
+    // Esecul aici NU strica raspunsul catre client: cererea e deja salvata.
+    try {
+      // 1. Find-or-create user Supabase (fara parola, email confirmat)
+      let userId: string | null = null
+      const created = await supabase.auth.admin.createUser({
+        email: cleanEmail,
+        email_confirm: true,
+        user_metadata: { full_name: `${first_name.trim()} ${last_name.trim()}`.trim() },
+      })
+      if (created.data?.user) {
+        userId = created.data.user.id
+      } else {
+        // user existent -> ia id-ul din profiles (email deja normalizat la signup)
+        const { data: prof } = await supabase
+          .from('profiles').select('id').eq('email', cleanEmail).maybeSingle()
+        userId = prof?.id ?? null
+      }
+
+      if (userId) {
+        // 2. leaga cererea de user
+        await supabase.from('capsule_requests')
+          .update({ user_id: userId }).eq('id', data.id)
+
+        // 3. capsula-ciorna, vizibila imediat in /admin -> tab "Capsule"
+        const { data: caps } = await supabase
+          .from('capsules')
+          .insert({
+            user_id:          userId,
+            request_id:       data.id,
+            title:            `Capsulă ${first_name.trim()}`,
+            unlock_price_ron: 49,
+            is_published:     false,
+            status:           'draft',
+          })
+          .select('id')
+          .single()
+
+        // 4. leaga capsula de cerere
+        if (caps?.id) {
+          await supabase.from('capsule_requests')
+            .update({ capsule_id: caps.id }).eq('id', data.id)
+        }
+      } else {
+        console.error('capsule-request: nu am putut obtine user_id pentru', cleanEmail, created.error?.message)
+      }
+    } catch (chainErr: any) {
+      console.error('capsule-request: creare cont/capsula esuata:', chainErr?.message || chainErr)
     }
 
     return NextResponse.json({

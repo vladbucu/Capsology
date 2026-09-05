@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendEmail, accessLinkEmail } from '@/lib/email'
 
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,6 +42,14 @@ export async function POST(req: NextRequest) {
 
     let cid = capsule_id
 
+    // Starea de dinainte de salvare — ca sa trimitem emailul de acces o singura data
+    let alreadySentAccessEmail = false
+    if (cid) {
+      const { data: existing } = await admin.from('capsules')
+        .select('access_email_sent_at').eq('id', cid).maybeSingle()
+      alreadySentAccessEmail = !!existing?.access_email_sent_at
+    }
+
     if (!cid) {
       const { data, error } = await admin.from('capsules').insert(payload).select('id').single()
       if (error) throw error
@@ -78,13 +87,56 @@ export async function POST(req: NextRequest) {
     }
 
     // Marcheaza cererea ca trimisa
-    if (capsule.is_published && capsule.request_id) {
+    if (payload.is_published && capsule.request_id) {
       await admin.from('capsule_requests')
         .update({ status: 'sent', sent_at: new Date().toISOString(), capsule_id: cid })
         .eq('id', capsule.request_id)
     }
 
-    return NextResponse.json({ ok: true, capsule_id: cid })
+    // ── Email cu link de logare — doar la prima publicare ─
+    let warning: string | undefined
+    if (payload.is_published && !alreadySentAccessEmail) {
+      try {
+        const { data: prof } = await admin.from('profiles')
+          .select('email, full_name').eq('id', payload.user_id).maybeSingle()
+
+        if (!prof?.email) {
+          warning = 'email_no_address'
+        } else {
+          const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
+            type: 'magiclink',
+            email: prof.email,
+            options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || ''}/seteaza-pin` },
+          })
+          const actionLink = link?.properties?.action_link
+          if (linkErr || !actionLink) {
+            warning = 'email_link_failed'
+            console.error('admin/capsule: generateLink', linkErr?.message)
+          } else {
+            const sent = await sendEmail({
+              to: prof.email,
+              subject: 'Capsula ta Capsology e gata',
+              html: accessLinkEmail({
+                firstName: (prof.full_name || '').split(' ')[0] || undefined,
+                actionLink,
+                capsuleTitle: payload.title,
+              }),
+            })
+            if (sent.ok) {
+              await admin.from('capsules')
+                .update({ access_email_sent_at: new Date().toISOString() }).eq('id', cid)
+            } else {
+              warning = 'email_failed'
+            }
+          }
+        }
+      } catch (mailErr: any) {
+        warning = 'email_failed'
+        console.error('admin/capsule: email acces esuat:', mailErr?.message || mailErr)
+      }
+    }
+
+    return NextResponse.json({ ok: true, capsule_id: cid, warning })
 
   } catch (e: any) {
     console.error('admin/capsule:', e)

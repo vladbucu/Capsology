@@ -64,6 +64,11 @@ export default function RequestsPage() {
 
       <div className="max-w-content mx-auto px-6 lg:px-12 py-8">
 
+        <button onClick={() => router.push('/admin')}
+          className="text-sm text-ink/50 hover:text-ink transition mb-6">
+          ← Panou principal
+        </button>
+
         <div className="flex items-baseline justify-between mb-7">
           <h1 className="text-2xl font-bold">Cereri de capsulă</h1>
           <span className="text-sm text-ink/45">{reqs.length} total</span>
