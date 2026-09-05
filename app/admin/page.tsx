@@ -38,12 +38,13 @@ export default function AdminDashboard() {
   const loadAll = async () => {
     const [pay, usr, cap] = await Promise.all([
       supabase.from('payments').select('*').eq('status', 'paid').order('paid_at', { ascending: false }),
-      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      // RLS pe `profiles` = doar propriul rand pentru anon; lista completa vine din ruta server.
+      fetch('/api/admin/users').then(x => x.json()).catch(() => ({ users: [] })),
       supabase.from('capsules').select('id, title, user_id, is_published, published_at, total_price_eur, capsule_number, status, request_id, access_email_sent_at')
         .order('created_at', { ascending: false }),
     ])
     setPayments(pay.data || [])
-    setUsers(usr.data || [])
+    setUsers(usr.users || [])
     setCapsules(cap.data || [])
   }
 

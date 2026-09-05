@@ -56,11 +56,13 @@ export default function CapsuleBuilder() {
       if (p?.role !== 'admin') { router.push('/'); return }
       setAuthed(true)
 
+      // RLS pe `profiles` lasa clientul anon sa vada doar propriul rand,
+      // deci lista de utilizatori vine printr-o ruta server cu service_role.
       const [u, r] = await Promise.all([
-        supabase.from('profiles').select('id, email, full_name').order('created_at', { ascending: false }),
+        fetch('/api/admin/users').then(x => x.json()).catch(() => ({ users: [] })),
         supabase.from('capsule_requests').select('*').in('status', ['new', 'in_progress']).order('created_at', { ascending: false }),
       ])
-      setUsers(u.data || [])
+      setUsers(u.users || [])
       setRequests(r.data || [])
 
       if (!isNew) {
@@ -190,6 +192,8 @@ export default function CapsuleBuilder() {
                   setCapsule({
                     ...capsule,
                     request_id: e.target.value,
+                    // preia clientul din cerere daca nu e deja setat
+                    user_id: capsule.user_id || r?.user_id || '',
                     title: capsule.title || (r ? `Capsulă ${r.first_name}` : ''),
                   })
                 }}
