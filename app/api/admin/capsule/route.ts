@@ -29,6 +29,16 @@ export async function POST(req: NextRequest) {
     if (!capsule?.user_id)
       return NextResponse.json({ error: 'Alege un utilizator.' }, { status: 400 })
 
+    // Baza pentru linkul din email: domeniul de pe care vine cererea adminului
+    // (evita localhost cand NEXT_PUBLIC_APP_URL nu e setat corect in productie).
+    const hdrHost  = req.headers.get('host')
+    const hdrProto = req.headers.get('x-forwarded-proto') || 'https'
+    const siteUrl =
+      req.headers.get('origin') ||
+      (hdrHost ? `${hdrProto}://${hdrHost}` : '') ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      'https://www.capsology.ro'
+
     const payload = {
       user_id:          capsule.user_id,
       request_id:       capsule.request_id || null,
@@ -109,7 +119,7 @@ export async function POST(req: NextRequest) {
           const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
             type: 'magiclink',
             email: prof.email,
-            options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || ''}/seteaza-pin` },
+            options: { redirectTo: `${siteUrl}/seteaza-pin` },
           })
           const actionLink = link?.properties?.action_link
           if (linkErr || !actionLink) {
