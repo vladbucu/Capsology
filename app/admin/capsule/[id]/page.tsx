@@ -38,6 +38,7 @@ export default function CapsuleBuilder() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState(false)
   const [msg, setMsg]         = useState('')
+  const [uploading, setUploading] = useState<string | null>(null)
 
   const [users, setUsers]     = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
@@ -99,6 +100,63 @@ export default function CapsuleBuilder() {
       if (unlock) done++
       return { ...it, is_unlocked: unlock }
     }))
+  }
+
+  // Redimensionează imagine pe client și upload în Supabase
+  const handleImageUpload = async (itemIdx: number, file: File) => {
+    if (!file.type.startsWith('image/'))
+      return setMsg('Doar imagini sunt acceptate')
+    if (file.size > 5 * 1024 * 1024)
+      return setMsg('Fișierul e prea mare (max 5MB)')
+
+    setUploading(String(itemIdx))
+    try {
+      // Redimensionare pe client
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
+      const img = new Image()
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => {
+          const maxW = 640
+          const ratio = img.naturalHeight / img.naturalWidth
+          canvas.width = maxW
+          canvas.height = Math.round(maxW * ratio)
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          resolve()
+        }
+        img.onerror = reject
+        img.src = URL.createObjectURL(file)
+      })
+
+      // Convertește canvas la blob
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.85)
+      })
+
+      // Upload în Supabase
+      const formData = new FormData()
+      formData.append('file', blob, 'image.jpg')
+      formData.append('itemId', items[itemIdx].id || `temp-${itemIdx}`)
+
+      const res = await fetch('/api/upload-item-image', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Upload failed')
+      }
+
+      const { imageUrl } = await res.json()
+      updateItem(itemIdx, { image_url: imageUrl })
+      setMsg('Poza încărcată')
+    } catch (e: any) {
+      setMsg(`Upload error: ${e.message}`)
+    } finally {
+      setUploading(null)
+    }
   }
 
   const save = async (publish = false) => {
@@ -292,15 +350,28 @@ export default function CapsuleBuilder() {
                           placeholder="Mărime" className={inpSm} />
                       </div>
 
-                      <div>
-                        <input value={it.image_url}
-                          onChange={e => updateItem(i, { image_url: e.target.value })}
-                          onBlur={e => updateItem(i, { image_url: normalizeUrl(e.target.value) })}
-                          placeholder="Link direct către fișierul imaginii (.jpg / .png / .webp)" className={inpSm} />
-                        <p className="text-[10px] text-ink/40 mt-1 leading-snug">
-                          Nu pagina produsului — linkul trebuie să se termină în .jpg/.png/.webp.
-                          Click-dreapta pe poză în magazin → „Copiază adresa imaginii".
-                          Unele magazine (Zara, H&amp;M) blochează afișarea pozelor pe alt site.
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <label className="flex-1 relative cursor-pointer">
+                            <div className={`px-3 py-2 rounded-lg border text-xs text-center transition ${
+                              uploading === String(i)
+                                ? 'border-blue-300 bg-blue-50'
+                                : 'border-border-line bg-warm-white hover:border-ink/30'
+                            }`}>
+                              {uploading === String(i) ? '⏳ Se încarcă...' : '+ Upload poză'}
+                            </div>
+                            <input type="file" accept="image/*"
+                              onChange={e => e.target.files?.[0] && handleImageUpload(i, e.target.files[0])}
+                              disabled={uploading !== null}
+                              className="hidden" />
+                          </label>
+                          <input value={it.image_url}
+                            onChange={e => updateItem(i, { image_url: e.target.value })}
+                            onBlur={e => updateItem(i, { image_url: normalizeUrl(e.target.value) })}
+                            placeholder="Sau link direct (.jpg/.png)" className={`flex-1 ${inpSm}`} />
+                        </div>
+                        <p className="text-[10px] text-ink/40 leading-snug">
+                          Upload direct evită problemele de hotlink. Sau paste link: click-dreapta pe poză în magazin → „Copiază adresa imaginii".
                         </p>
                       </div>
 
