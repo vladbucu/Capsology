@@ -9,7 +9,7 @@ export async function GET(
     const supabase = await createServerComponentClient()
     const { data: capsule, error } = await supabase
       .from('capsules')
-      .select('items, total_price_eur, status')
+      .select('items, total_price_eur, unlock_price_ron, status')
       .eq('id', params.capsuleId)
       .single()
 
@@ -20,6 +20,7 @@ export async function GET(
     return NextResponse.json({
       items: capsule.items || [],
       total_eur: capsule.total_price_eur || 0,
+      unlock_price_ron: capsule.unlock_price_ron ?? 49,
       status: capsule.status,
     })
   } catch (error: any) {

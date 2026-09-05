@@ -35,6 +35,13 @@ function CheckoutPageInner() {
   const tier      = (searchParams.get('tier') || 'unlock') as 'unlock' | 'full_service'
   const capsuleId = searchParams.get('capsule_id') || ''
 
+  // Suma de plată vine din capsulă (capsules.unlock_price_ron), în RON.
+  // Inițial folosim ?amount= din URL pentru afișare instant; o confirmăm din API. Fallback: 49 RON.
+  const amountParam = Number(searchParams.get('amount'))
+  const [priceRon, setPriceRon] = useState<number>(
+    Number.isFinite(amountParam) && amountParam > 0 ? amountParam : 49
+  )
+
   const [items, setItems]         = useState<CartItem[]>([])
   const [capsuleTotal, setCapsuleTotal] = useState(0)
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
@@ -55,6 +62,9 @@ function CheckoutPageInner() {
         const data = await res.json()
         setItems(data.items || [])
         setCapsuleTotal(data.total_eur || 0)
+        if (data.unlock_price_ron != null && Number(data.unlock_price_ron) > 0) {
+          setPriceRon(Number(data.unlock_price_ron))
+        }
       } catch {
         // fallback: use sessionStorage if API not yet wired
         const stored = sessionStorage.getItem('capsule_items')
@@ -98,8 +108,7 @@ function CheckoutPageInner() {
 
   // ─── Price calculation ────────────────────────────────────────
   const clothingTotal = activeItems.reduce((s, i) => s + i.price_eur, 0)
-  const serviceFee    = tier === 'unlock' ? 3 : 15
-  const grandTotal    = serviceFee  // user pays only service fee; clothing ordered separately
+  // Clientul plătește acum doar taxa de deblocare a capsulei (RON); îmbrăcămintea se comandă separat.
 
   // ─── Validation ───────────────────────────────────────────────
   const validate = () => {
@@ -198,8 +207,8 @@ function CheckoutPageInner() {
               </p>
               <p className="text-xs text-amber-700 leading-relaxed">
                 {tier === 'unlock'
-                  ? 'Conform legislației UE privind conținutul digital (Directiva 2019/770), taxa de €3 nu poate fi rambursată odată ce accesul la linkuri este furnizat. Prin continuare, ești de acord cu livrarea imediată a serviciului digital și renunți la dreptul de retragere de 14 zile.'
-                  : 'Taxa de serviciu de €15 reprezintă contraprestația pentru serviciul de comandă și nu poate fi rambursată odată ce comanda a fost plasată. Articolele de îmbrăcăminte pot fi returnate direct la About You sau Zalando conform politicii lor de retur (30 de zile). Capsology nu intermediază returnările.'}
+                  ? `Conform legislației UE privind conținutul digital (Directiva 2019/770), taxa de ${priceRon} RON nu poate fi rambursată odată ce accesul la linkuri este furnizat. Prin continuare, ești de acord cu livrarea imediată a serviciului digital și renunți la dreptul de retragere de 14 zile.`
+                  : `Taxa de serviciu de ${priceRon} RON reprezintă contraprestația pentru serviciul de comandă și nu poate fi rambursată odată ce comanda a fost plasată. Articolele de îmbrăcăminte pot fi returnate direct la About You sau Zalando conform politicii lor de retur (30 de zile). Capsology nu intermediază returnările.`}
               </p>
             </div>
           </div>
@@ -264,11 +273,11 @@ function CheckoutPageInner() {
               </div>
               <div className="flex justify-between text-xs text-stone-500">
                 <span>Taxă serviciu comandă & livrare</span>
-                <span>€{serviceFee}</span>
+                <span>{priceRon} RON</span>
               </div>
               <div className="flex justify-between text-sm font-medium text-stone-800 pt-1 border-t border-stone-200">
                 <span>Plătești acum</span>
-                <span>€{serviceFee} <span className="text-xs font-normal text-stone-400">(taxa serviciu)</span></span>
+                <span>{priceRon} RON <span className="text-xs font-normal text-stone-400">(taxa serviciu)</span></span>
               </div>
               <p className="text-xs text-stone-400 leading-relaxed">
                 Suma de €{clothingTotal.toFixed(0)} pentru îmbrăcăminte va fi colectată direct de About You / Zalando la livrare sau prin linkurile furnizate.
@@ -278,7 +287,7 @@ function CheckoutPageInner() {
             {/* Return policy notice */}
             <div className="px-4 py-3 bg-blue-50 border-t border-blue-100">
               <p className="text-xs text-blue-700 leading-relaxed">
-                <span className="font-medium">Politica de retur pentru îmbrăcăminte:</span> Returnările se fac direct la About You sau Zalando conform politicii lor standard (30 zile). Capsology nu intermediază returnările și nu rambursează taxa de serviciu de €15.
+                <span className="font-medium">Politica de retur pentru îmbrăcăminte:</span> Returnările se fac direct la About You sau Zalando conform politicii lor standard (30 zile). Capsology nu intermediază returnările și nu rambursează taxa de serviciu de {priceRon} RON.
               </p>
             </div>
           </div>
@@ -289,7 +298,7 @@ function CheckoutPageInner() {
           <div className="bg-white border border-stone-200 rounded-xl px-4 py-4 mb-5">
             <div className="flex justify-between items-center mb-3">
               <span className="text-sm text-stone-600">Acces la linkuri & branduri</span>
-              <span className="text-sm font-medium text-stone-800">€3.00</span>
+              <span className="text-sm font-medium text-stone-800">{priceRon} RON</span>
             </div>
             <div className="text-xs text-stone-400 bg-stone-50 rounded-lg p-3 leading-relaxed">
               Vei primi imediat brandurile și linkurile de cumpărare pentru toate piesele capsulei. Linkurile About You sunt valabile <strong>7 zile</strong> — vei primi un email de reamintire. Linkurile Zalando sunt valabile 30 de zile.
@@ -333,8 +342,8 @@ function CheckoutPageInner() {
               </Link>
               {'. '}
               {tier === 'unlock'
-                ? 'Înțeleg că taxa de €3 este nerambursabilă deoarece serviciul digital este livrat imediat și renunț la dreptul de retragere de 14 zile conform art. 16(m) din Directiva 2011/83/UE.'
-                : 'Înțeleg că taxa de serviciu de €15 este nerambursabilă odată ce comanda este plasată și că retururile pentru îmbrăcăminte se fac direct la retailer.'}
+                ? `Înțeleg că taxa de ${priceRon} RON este nerambursabilă deoarece serviciul digital este livrat imediat și renunț la dreptul de retragere de 14 zile conform art. 16(m) din Directiva 2011/83/UE.`
+                : `Înțeleg că taxa de serviciu de ${priceRon} RON este nerambursabilă odată ce comanda este plasată și că retururile pentru îmbrăcăminte se fac direct la retailer.`}
             </p>
           </label>
           {errors.agreed && <p className="text-xs text-red-500 mt-2 ml-7">{errors.agreed}</p>}
@@ -356,8 +365,8 @@ function CheckoutPageInner() {
           {submitting
             ? 'Se procesează...'
             : tier === 'unlock'
-            ? 'Plătește €3 și deblochează capsula →'
-            : `Plătește €15 taxa serviciu →`}
+            ? `Plătește ${priceRon} RON și deblochează capsula →`
+            : `Plătește ${priceRon} RON taxa serviciu →`}
         </button>
 
         <p className="text-xs text-stone-400 text-center mt-3 leading-relaxed">

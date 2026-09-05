@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { PRICES } from '@/lib/types'
 import type { PaymentTier } from '@/lib/types'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-04-10' })
+
+// Preț de deblocare implicit (RON) când capsula nu are unlock_price_ron setat.
+const DEFAULT_UNLOCK_PRICE_RON = 49
 
 // ─── Test capsule IDs — bypass Supabase lookup ────────────────
 // Used for Stripe payment testing before Supabase is configured
@@ -24,23 +26,32 @@ export async function POST(req: NextRequest) {
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
       process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://your-project.supabase.co'
 
+    // ─── Suma de plată: unlock_price_ron din capsulă (RON) ────
+    let priceRon = DEFAULT_UNLOCK_PRICE_RON
+
     if (!isTestMode) {
-      // ─── Production: verify capsule exists in Supabase ─────
+      // ─── Production: citește prețul capsulei din Supabase ──
       try {
         const { createServerComponentClient } = await import('@/lib/supabase')
         const supabase = await createServerComponentClient()
         const { data: capsule, error } = await supabase
           .from('capsules')
-          .select('id, total_price_eur')
+          .select('id, unlock_price_ron')
           .eq('id', capsule_id)
           .single()
         if (error || !capsule) {
           return NextResponse.json({ error: 'Capsule not found' }, { status: 404 })
         }
+        if (capsule.unlock_price_ron != null && Number(capsule.unlock_price_ron) > 0) {
+          priceRon = Number(capsule.unlock_price_ron)
+        }
       } catch {
         return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
       }
     }
+
+    // Stripe folosește subunitatea monedei (bani pentru RON).
+    const unitAmount = Math.round(priceRon * 100)
 
     // ─── Build Stripe session ─────────────────────────────────
     const descriptions: Record<PaymentTier, string> = {
@@ -54,12 +65,12 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
-          currency: 'eur',
+          currency: 'ron',
           product_data: {
             name: tier === 'unlock' ? 'Capsology — Deblochează capsula' : 'Capsology — Serviciu complet',
             description: descriptions[tier],
           },
-          unit_amount: PRICES[tier],
+          unit_amount: unitAmount,
         },
         quantity: 1,
       }],
@@ -74,18 +85,19 @@ export async function POST(req: NextRequest) {
         capsule_id,
         tier,
         test_mode: isTestMode ? 'true' : 'false',
+        price_ron: String(priceRon),
         delivery_address:   delivery_address   ? JSON.stringify(delivery_address)   : '',
         guest_info:         guest_info         ? JSON.stringify(guest_info)         : '',
         removed_item_ids:   removed_item_ids   ? JSON.stringify(removed_item_ids)   : '',
       },
       payment_intent_data: {
-        description: `Capsology — ${tier === 'unlock' ? 'Unlock €3' : 'Full Service €15'} — Nerambursabil`,
+        description: `Capsology — ${tier === 'unlock' ? 'Deblocare capsulă' : 'Serviciu complet'} — ${priceRon} RON — Nerambursabil`,
       },
       custom_text: {
         submit: {
           message: tier === 'unlock'
-            ? 'Prin continuare confirmi că taxa de €3 este nerambursabilă — conținut digital livrat imediat (Directiva EU 2011/83/UE art.16m).'
-            : 'Prin continuare confirmi că taxa de serviciu de €15 este nerambursabilă odată ce comanda este plasată.',
+            ? `Prin continuare confirmi că suma de ${priceRon} RON este nerambursabilă — conținut digital livrat imediat (Directiva EU 2011/83/UE art.16m).`
+            : `Prin continuare confirmi că taxa de serviciu de ${priceRon} RON este nerambursabilă odată ce comanda este plasată.`,
         },
       },
     })
@@ -98,7 +110,7 @@ export async function POST(req: NextRequest) {
         await supabase.from('payments').insert({
           capsule_id,
           stripe_session_id: session.id,
-          amount_eur: PRICES[tier] / 100,
+          amount_eur: priceRon,   // coloana istorică `amount_eur` stochează acum valoarea în RON
           tier,
           status: 'pending',
         })
