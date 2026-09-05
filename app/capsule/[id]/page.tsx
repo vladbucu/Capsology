@@ -173,7 +173,7 @@ function ItemCard({ item, unlocked }: { item: any; unlocked: boolean }) {
 
       <div className="aspect-[3/4] bg-warm-white p-4 relative">
         {item.image_url ? (
-          <img src={item.image_url} alt={unlocked ? item.name : ''}
+          <img src={item.image_url} alt={unlocked ? item.name : ''} referrerPolicy="no-referrer"
             className={`w-full h-full object-contain ${unlocked ? '' : 'blur-md scale-95'}`} />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-xs text-ink/25">

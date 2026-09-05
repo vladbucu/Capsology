@@ -77,7 +77,7 @@ export default function WardrobePage() {
                     {items.slice(0, 4).map((i: any) => (
                       <div key={i.id} className="bg-warm-white p-3">
                         {i.image_url && (
-                          <img src={i.image_url} alt=""
+                          <img src={i.image_url} alt="" referrerPolicy="no-referrer"
                             className={`w-full h-full object-contain ${i.is_unlocked || isOpen ? '' : 'blur-[6px]'}`} />
                         )}
                       </div>

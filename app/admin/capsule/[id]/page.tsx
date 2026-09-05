@@ -259,11 +259,7 @@ export default function CapsuleBuilder() {
                     {/* Preview poza */}
                     <div className="w-24 flex-shrink-0">
                       <div className="aspect-[3/4] bg-warm-white rounded-lg border border-border-line overflow-hidden mb-2">
-                        {it.image_url
-                          ? <img src={it.image_url} alt="" className="w-full h-full object-contain" />
-                          : <div className="w-full h-full flex items-center justify-center text-[10px] text-ink/30 text-center px-1">
-                              fără poză
-                            </div>}
+                        <Thumb src={it.image_url} />
                       </div>
                       <button onClick={() => updateItem(i, { is_unlocked: !it.is_unlocked })}
                         className={`w-full text-[10px] rounded-md py-1.5 border transition ${
@@ -296,10 +292,20 @@ export default function CapsuleBuilder() {
                           placeholder="Mărime" className={inpSm} />
                       </div>
 
-                      <input value={it.image_url} onChange={e => updateItem(i, { image_url: e.target.value })}
-                        placeholder="Link poză (https://…)" className={inpSm} />
+                      <div>
+                        <input value={it.image_url}
+                          onChange={e => updateItem(i, { image_url: e.target.value })}
+                          onBlur={e => updateItem(i, { image_url: normalizeUrl(e.target.value) })}
+                          placeholder="Link direct către fișierul imaginii (.jpg / .png / .webp)" className={inpSm} />
+                        <p className="text-[10px] text-ink/40 mt-1 leading-snug">
+                          Nu pagina produsului — linkul trebuie să se termină în .jpg/.png/.webp.
+                          Click-dreapta pe poză în magazin → „Copiază adresa imaginii".
+                          Unele magazine (Zara, H&amp;M) blochează afișarea pozelor pe alt site.
+                        </p>
+                      </div>
 
                       <input value={it.product_url} onChange={e => updateItem(i, { product_url: e.target.value })}
+                        onBlur={e => updateItem(i, { product_url: normalizeUrl(e.target.value) })}
                         placeholder="Link magazin (https://…)" className={inpSm} />
 
                       <input value={it.notes} onChange={e => updateItem(i, { notes: e.target.value })}
@@ -361,6 +367,37 @@ export default function CapsuleBuilder() {
 
 const inp   = 'w-full px-3 py-2.5 rounded-btn border border-border-line bg-white text-sm focus:outline-none focus:border-ink transition'
 const inpSm = 'w-full px-3 py-2 rounded-lg border border-border-line bg-warm-white text-xs focus:outline-none focus:border-ink transition'
+
+// Adauga https:// daca lipseste protocolul (ex. "www.zara.com" -> "https://www.zara.com")
+function normalizeUrl(v: string): string {
+  const s = (v || '').trim()
+  if (!s) return ''
+  if (/^https?:\/\//i.test(s)) return s
+  if (/^\/\//.test(s)) return 'https:' + s
+  return 'https://' + s
+}
+
+// Preview cu stare de eroare — distinge "fara poza" de "link care nu se incarca"
+function Thumb({ src }: { src: string }) {
+  const [err, setErr] = useState(false)
+  useEffect(() => { setErr(false) }, [src])
+
+  if (!src) return (
+    <div className="w-full h-full flex items-center justify-center text-[10px] text-ink/30 text-center px-1">
+      fără poză
+    </div>
+  )
+  if (err) return (
+    <div className="w-full h-full flex items-center justify-center text-[9px] text-[#B91C1C] text-center px-1 leading-tight">
+      linkul nu se încarcă
+    </div>
+  )
+  return (
+    <img src={src} alt="" referrerPolicy="no-referrer"
+      className="w-full h-full object-contain"
+      onError={() => setErr(true)} />
+  )
+}
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
