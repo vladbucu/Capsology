@@ -1,9 +1,16 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { ALL_COLOURS } from '@/lib/constants'
+
+// 3 poze locale cu ciclare la 3 secunde
+const HERO_IMAGES = [
+  '/hero/hero-1.jpg',
+  '/hero/hero-2.jpg',
+  '/hero/hero-3.jpg',
+]
 
 // Subset reprezentativ pe homepage; paleta completa e in formular
 const COLOURS = ALL_COLOURS.filter(c =>
@@ -14,6 +21,15 @@ export default function HomePage() {
   const router = useRouter()
   const [budget, setBudget]   = useState(600)
   const [colours, setColours] = useState<string[]>(['negru', 'alb'])
+  const [heroImageIdx, setHeroImageIdx] = useState(0)
+
+  // Ciclare imagini hero la fiecare 3 secunde
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroImageIdx(prev => (prev + 1) % HERO_IMAGES.length)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [])
 
   const toggleColour = (id: string) =>
     setColours(c => c.includes(id) ? c.filter(x => x !== id) : [...c, id])
@@ -65,20 +81,25 @@ export default function HomePage() {
               <div className="aspect-[4/5] w-full max-w-[420px] rounded-card-lg bg-dark-grey
                               relative overflow-hidden">
 
-                {/* Fallback vizual daca poza nu incarca */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                {/* Fallback */}
+                <div className="absolute inset-0 flex items-center justify-center z-0">
                   <img src="/brand/logo/mark-white.svg" alt="" className="w-[40%] h-[40%] opacity-15" />
                 </div>
 
-                {/* Tinuta editoriala — o capsula completa.
-                    Inlocuieste src cu asset propriu: /brand/looks/hero-look.jpg */}
-                <img
-                  src="https://images.unsplash.com/photo-1763610452422-a24873594a0b?w=900&q=80&auto=format&fit=crop"
-                  alt="Ținută smart casual dintr-o capsulă Capsology"
-                  className="relative w-full h-full object-cover object-top"
-                  loading="lazy" />
+                {/* Carousel de 3 poze cu ciclare la 3s */}
+                {HERO_IMAGES.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt="Ținută old money"
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                      i === heroImageIdx ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    referrerPolicy="no-referrer" />
+                ))}
 
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent px-5 pt-10 pb-4">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent px-5 pt-10 pb-4 z-10">
                   <p className="text-xs text-white/85 leading-relaxed">
                     O capsulă = o garderobă completă, cu piese care se asortează între ele.
                   </p>
