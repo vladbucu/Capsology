@@ -77,7 +77,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="relative hidden lg:flex items-center justify-center">
+            <div className="relative hidden md:flex items-center justify-center">
               <div className="aspect-[4/5] w-full max-w-[420px] rounded-card-lg bg-dark-grey
                               relative overflow-hidden">
 
