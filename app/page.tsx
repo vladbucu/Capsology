@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { ALL_COLOURS } from '@/lib/constants'
+import { analytics } from '@/lib/analytics'
 
 // 3 poze locale cu ciclare la 3 secunde
 const HERO_IMAGES = [
@@ -31,11 +32,17 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [])
 
-  const toggleColour = (id: string) =>
-    setColours(c => c.includes(id) ? c.filter(x => x !== id) : [...c, id])
+  const toggleColour = (id: string) => {
+    const updated = colours.includes(id) ? colours.filter(x => x !== id) : [...colours, id]
+    setColours(updated)
+    analytics.itemClicked(`color_${id}`)
+  }
 
-  const start = () =>
+  const start = () => {
+    analytics.formStarted('capsule_quiz')
+    analytics.itemClicked('start_quiz_button')
     router.push(`/quiz?budget=${budget}&colors=${colours.join(',')}`)
+  }
 
   return (
     <div className="min-h-screen bg-warm-white">
