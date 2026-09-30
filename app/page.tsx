@@ -241,7 +241,7 @@ export default function HomePage() {
           </div>
           <div className="border-t border-white/10 mt-8 pt-6 text-center">
             <p className="text-[11px] text-white/35">
-              © 2026 97 Hub SRL · Capsology · capsology.ro
+              © 2026 97 Hub SRL · Capsology · capsology.ro (TEST DEPLOY)
             </p>
           </div>
         </div>
