@@ -6,6 +6,7 @@ import Header from '@/components/Header'
 export default function ComingSoonPage() {
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
+  // Coming Soon notification form
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
