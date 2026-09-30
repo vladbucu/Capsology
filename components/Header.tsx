@@ -29,7 +29,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <Link href="/quiz"
+        <Link href="/coming-soon"
           className="text-xs font-medium bg-white text-ink rounded-btn px-4 py-2.5 hover:bg-white/90 transition">
           Capsula mea gratuită
         </Link>
