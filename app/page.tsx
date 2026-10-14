@@ -241,7 +241,8 @@ export default function HomePage() {
           </div>
           <div className="border-t border-white/10 mt-8 pt-6 text-center">
             <p className="text-[11px] text-white/35">
-              © 2026 97 HUB SRL · CUI 55676566 · J2026057047007 · Capsology · capsology.ro
+              © 2026 97 HUB SRL · CUI 55676566 · J2026057047007 · Capsology · capsology.ro<br />
+              Aleea Istru 2, Bl. A14B, Sc. 3, Et. P, Ap. 32, Sector 6, București, cod 061912
             </p>
           </div>
         </div>

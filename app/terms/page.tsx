@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 const COMPANY     = '97 HUB SRL'
 const CUI         = 'CUI 55676566'
 const REG_COM     = 'J2026057047007'
+const SEDIU       = 'Aleea Istru 2, Bl. A14B, Sc. 3, Et. P, Ap. 32, Sector 6, București, cod 061912'
 const BRAND       = 'Capsology'
 const DOMAIN      = 'capsology.ro'
 const EMAIL_LEGAL = 'legal@capsology.ro'
@@ -38,7 +39,7 @@ export default function TermsPage() {
               Platforma <strong>{BRAND}</strong> (accesibilă la <strong>{DOMAIN}</strong>) este operată de{' '}
               <strong>{COMPANY}</strong>, societate cu răspundere limitată înregistrată în România,{' '}
               <strong>{CUI}</strong>, număr de înregistrare la Registrul Comerțului{' '}
-              <strong>{REG_COM}</strong>, cu sediul social în România.
+              <strong>{REG_COM}</strong>, cu sediul social în <strong>{SEDIU}</strong>.
             </p>
             <p>
               {BRAND} este un brand și produs digital al {COMPANY}. Prin utilizarea platformei,
@@ -165,49 +166,10 @@ export default function TermsPage() {
 
           <Section title="7. Prelucrarea datelor cu caracter personal (GDPR)">
             <p>
-              {COMPANY}, în calitate de operator de date, prelucrează datele personale ale utilizatorilor
-              în conformitate cu Regulamentul (UE) 2016/679 (GDPR), Legea nr. 190/2018 de implementare
-              a GDPR în România și legislația națională aplicabilă.
-            </p>
-            <p><strong>Categorii de date colectate:</strong></p>
-            <ul className="list-none space-y-1 ml-4">
-              <Li>Date de identificare: adresă email, nume (opțional, la înregistrare)</Li>
-              <Li>Date de contact și livrare: adresă, telefon (doar pentru Serviciul Complet)</Li>
-              <Li>Date comportamentale din quiz: preferințe de stil, buget, culori, ocazii de purtare, mărimi</Li>
-              <Li>Date tehnice: adresă IP, tip browser, pagini accesate (prin cookies de sesiune)</Li>
-            </ul>
-            <p><strong>Temeiul juridic al prelucrării:</strong></p>
-            <ul className="list-none space-y-1 ml-4">
-              <Li>Art. 6(1)(b) GDPR — executarea contractului: pentru procesarea plăților și livrarea serviciilor</Li>
-              <Li>Art. 6(1)(a) GDPR — consimțământ: pentru datele comportamentale din quiz utilizate la îmbunătățirea algoritmului</Li>
-              <Li>Art. 6(1)(f) GDPR — interes legitim: pentru securitatea platformei și prevenirea fraudei</Li>
-            </ul>
-            <p>
-              <strong>Datele de card</strong> sunt procesate exclusiv de Stripe Inc., în calitate de
-              operator independent. {COMPANY} nu stochează, nu accesează și nu procesează direct niciun
-              dat de card. Stripe este certificat PCI DSS Level 1.
-            </p>
-            <p><strong>Drepturile utilizatorului conform GDPR:</strong></p>
-            <ul className="list-none space-y-1 ml-4">
-              <Li>Dreptul de acces (art. 15 GDPR)</Li>
-              <Li>Dreptul la rectificare (art. 16 GDPR)</Li>
-              <Li>Dreptul la ștergere („dreptul de a fi uitat") (art. 17 GDPR)</Li>
-              <Li>Dreptul la restricționarea prelucrării (art. 18 GDPR)</Li>
-              <Li>Dreptul la portabilitatea datelor (art. 20 GDPR)</Li>
-              <Li>Dreptul de opoziție (art. 21 GDPR)</Li>
-            </ul>
-            <p>
-              Solicitările se transmit la{' '}
-              <a href={`mailto:${EMAIL_GDPR}`} className="underline">{EMAIL_GDPR}</a>.
-              Răspundem în termen de maximum 30 de zile.
-            </p>
-            <p>
-              Aveți dreptul de a depune o plângere la{' '}
-              <strong>Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal
-              (ANSPDCP)</strong>, cu sediul în Bd. G-ral. Gheorghe Magheru 28-30, București,{' '}
-              <a href="https://www.dataprotection.ro" className="underline" target="_blank" rel="noopener noreferrer">
-                www.dataprotection.ro
-              </a>.
+              Prelucrarea datelor cu caracter personal face obiectul unui document separat:{' '}
+              <Link href="/confidentialitate" className="underline">Politica de confidențialitate</Link>.
+              {COMPANY} prelucrează datele în calitate de operator, conform Regulamentului (UE) 2016/679
+              (GDPR) și Legii nr. 190/2018.
             </p>
           </Section>
 
@@ -303,6 +265,7 @@ export default function TermsPage() {
         <div className="mt-12 pt-6 border-t border-stone-200 text-center space-y-1">
           <p className="text-xs text-stone-500 font-medium">{COMPANY}</p>
           <p className="text-xs text-stone-400">{CUI} · {REG_COM}</p>
+          <p className="text-xs text-stone-400">{SEDIU}</p>
           <p className="text-xs text-stone-400">
             <a href={`mailto:${EMAIL_LEGAL}`} className="underline">{EMAIL_LEGAL}</a>
             {' · '}

@@ -112,7 +112,7 @@ export default function ComingSoonPage() {
       <footer className="bg-ink text-white border-t border-white/10">
         <div className="max-w-content mx-auto px-6 lg:px-12 py-8">
           <div className="flex col sm:flex-row items-center justify-between gap-5 text-sm text-white/50">
-            <p>© 2026 97 HUB SRL · CUI 55676566 · J2026057047007 · Capsology</p>
+            <p>© 2026 97 HUB SRL · CUI 55676566 · J2026057047007 · Capsology<br />Aleea Istru 2, Bl. A14B, Sc. 3, Et. P, Ap. 32, Sector 6, București, cod 061912</p>
             <a href="mailto:idei@97hub.ro" className="hover:text-white transition">Contact</a>
           </div>
         </div>
