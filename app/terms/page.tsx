@@ -3,17 +3,17 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Termeni și Condiții — Capsology',
-  description: 'Termenii și condițiile de utilizare ale platformei Capsology, un produs al Robot Lab SRL',
+  description: 'Termenii și condițiile de utilizare ale platformei Capsology, un produs al 97 HUB SRL',
 }
 
-const COMPANY     = 'Robot Lab SRL'
-const CUI         = 'CIF 42723909'
-const REG_COM     = 'J20/2000/743840/4'
+const COMPANY     = '97 HUB SRL'
+const CUI         = 'CUI 55676566'
+const REG_COM     = 'J2026057047007'
 const BRAND       = 'Capsology'
 const DOMAIN      = 'capsology.ro'
 const EMAIL_LEGAL = 'legal@capsology.ro'
 const EMAIL_GDPR  = 'gdpr@capsology.ro'
-const UPDATED     = '15 iunie 2026'
+const UPDATED     = '14 octombrie 2026'
 
 export default function TermsPage() {
   return (
