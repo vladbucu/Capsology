@@ -35,7 +35,7 @@ export default function HomePage() {
     setColours(c => c.includes(id) ? c.filter(x => x !== id) : [...c, id])
 
   const start = () =>
-    router.push(`/coming-soon`)
+    router.push(`/quiz?budget=${budget}&colors=${colours.join(',')}`)
 
   return (
     <div className="min-h-screen bg-warm-white">
@@ -222,7 +222,7 @@ export default function HomePage() {
           Capsology pornește de la o idee simplă: majoritatea bărbaților nu au nevoie
           de mai multe opțiuni, ci de alegerile potrivite. Noi le facem pentru tine.
         </p>
-        <Link href="/coming-soon"
+        <Link href="/quiz"
           className="inline-block bg-ink text-white rounded-btn px-8 py-4 text-sm font-semibold hover:bg-dark-grey transition">
           Începe cu capsula gratuită →
         </Link>
